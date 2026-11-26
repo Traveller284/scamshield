@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: scamshield
+    runtime: python
+    plan: free
+    buildCommand: python -m compileall -q server.py
+    startCommand: python server.py
+    healthCheckPath: /api/stats

@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+state.json
+state.tmp
+guards.json
+feed.txt
