@@ -2,9 +2,11 @@
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
-import json, os, re, secrets, socket, threading, time, hashlib, urllib.request, urllib.error, webbrowser
+import json, os, re, secrets, socket, threading, time, hashlib, urllib.request, urllib.error, webbrowser, sys
 
 ROOT = Path(__file__).resolve().parent
+if str(ROOT) not in sys.path: sys.path.insert(0, str(ROOT))
+from ml_model import classify as ml_classify
 PORT = int(os.environ.get('PORT', '8000'))
 BIND_HOST = os.environ.get('SCAMSHIELD_HOST', '0.0.0.0')
 STATE_LOCK = threading.Lock()
@@ -145,7 +147,14 @@ def analyse(text,lang='en',dry=False,private=False,guardian=''):
             pos=text.lower().find(v.lower())
             if pos>=0:spans.append([pos,pos+len(v)])
     if reported_points:weights['other']=weights.get('other',0)+reported_points; hits.append(('reported',reported_points,'other'))
-    distinct=len({x[0] for x in hits}); score=sum(v for _,v,_ in hits)+(10 if distinct>=3 else 0); score=min(100,score)
+    distinct=len({x[0] for x in hits}); rule_score=min(100,sum(v for _,v,_ in hits)+(10 if distinct>=3 else 0))
+    ml_prediction=ml_classify(text)
+    ml_info=None
+    score=rule_score
+    if ml_prediction:
+        ml_score=ml_prediction['probability']
+        score=max(rule_score,round(rule_score*.6+ml_score*.4))
+        ml_info={'probability':ml_score,'evidence':ml_prediction['evidence'],'contribution':score-rule_score}
     kind=max(weights,key=weights.get) if weights else 'other'; lvl=level_for(score)
     labels={
       'otp':'Requests or mentions an OTP','kyc':'Account or KYC threat','urgency':'Pressure to act quickly','lottery':'Prize or lottery bait','upi':'UPI PIN request','job':'Job offer with a fee','parcel':'Parcel or digital-arrest claim','impersonation':'Bank impersonation','payment':'Suspicious payment demand','malware':'Remote-access app request','utility':'Utility disconnection threat','investment':'Unrealistic investment promise','giftcard':'Gift-card purchase request','advancefee':'Pay first to receive something','link':'Suspicious link','other':'Contains a number or UPI ID that users reported as a scam'}
@@ -165,7 +174,7 @@ def analyse(text,lang='en',dry=False,private=False,guardian=''):
     for rid,w,k in hits:
         if k not in used: flags.append({'id':rid,'label':flag_words.get(lang,{}).get(k,labels.get(k,'Suspicious signal'))}); used.add(k)
     advice=tr['ad_'+lvl]
-    return {'score':score,'level':lvl,'verdict':tr[lvl],'advice':advice,'flags':flags,'spans':sorted(set(map(tuple,spans))),'links':[{'url':x['url'],'issues':[link_words.get(lang,{}).get(y,y) for y in x['issues']]} for x in links],'ids':ids,'kind':kind,'radar':False,'guardian':False}
+    return {'score':score,'ruleScore':rule_score,'ml':ml_info,'level':lvl,'verdict':tr[lvl],'advice':advice,'flags':flags,'spans':sorted(set(map(tuple,spans))),'links':[{'url':x['url'],'issues':[link_words.get(lang,{}).get(y,y) for y in x['issues']]} for x in links],'ids':ids,'kind':kind,'radar':False,'guardian':False}
 
 KNOWN_PROVIDERS={'okaxis','oksbi','okhdfcbank','okicici','ybl','ibl','axl','paytm','apl','upi','sbi','icici','hdfcbank','axisbank','pnb','barodampay','kotak','idfcbank','yesbank','aubank','fbl','airtel','jio','postbank','slc','jupiteraxis','freecharge','rbl','indus','cnrb','unionbank'}
 BAIT=re.compile(r'refund|kyc|support|reward|care|lottery|helpdesk|verify|prize|loan|cashback|claim',re.I)

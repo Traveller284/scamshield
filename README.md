@@ -1,6 +1,6 @@
 # ScamShield
 
-An explainable, privacy-minded scam-checking demo for Indian users. It scores suspicious messages, highlights the signals it found, and offers number checks, family alerts, a community radar, and short learning games.
+An explainable, privacy-minded scam-checking demo for Indian users. It combines transparent rules with a small local machine-learning text classifier, highlights its signals, and offers number checks, family alerts, a community radar, and short learning games.
 
 ## Quick start (Windows)
 
@@ -28,13 +28,13 @@ For Family Shield, create a code, then open its topic link on the guardian's pho
 
 ## Privacy and number scoring
 
-Message text is analyzed in memory and is not written to disk or logged. `state.json` stores aggregate counts, anonymous radar metadata, alert metadata, community report counts, and one-way hashed reporter keys; it never stores message text or raw IP addresses. Family codes are secrets. Radar can be disabled with the persistent private toggle.
+Message text is analyzed in memory by the local rule engine and Naive Bayes classifier; it is not written to disk or logged by the app. `state.json` stores aggregate counts, anonymous radar metadata, alert metadata, community report counts, and one-way hashed reporter keys; it never stores message text or raw IP addresses. Family codes are secrets. Radar can be disabled with the persistent private toggle.
 
 Number and UPI scores are transparent heuristics, not proof and not a lookup of who owns an account. Phone signals: foreign country code +40; 140 telemarketing series +30; invalid Indian mobile format +30; six repeated digits +20. UPI signals: bait word in the handle +50; unfamiliar provider +15 (weak signal); handle of 3 characters or fewer +10. Each community report adds 25, up to 60; three reports force a score of at least 70. Phone numbers normalize to their last ten digits and UPI IDs to lowercase. Thresholds match message checks: below 25 safe, 25–54 caution, 55+ scam. A clean result is not proof.
 
 ## Honest limitations
 
-The detector uses hand-written rules, not machine learning. It can miss new wording, code-mixed text, and languages outside the listed keyword coverage; Hindi, Kannada, Tamil, and Telugu detection is keyword-level. Number reputation is not identity verification. Live feeds, Grok, ntfy, OCR, speech transcription, and Telegram rely on internet and external services.
+The detector combines hand-written rules with a small Bernoulli Naive Bayes model trained on curated example messages. The model runs locally in Python without an external ML service or third-party package; its English-first training set is small, so its estimate is advisory and can be wrong. The rule engine remains the explainable baseline and the model only raises its score. It can miss new wording, code-mixed text, and languages outside the listed keyword coverage; Hindi, Kannada, Tamil, and Telugu detection remains keyword-level. Number reputation is not identity verification. Live feeds, Grok, ntfy, OCR, speech transcription, and Telegram rely on internet and external services.
 
 ### Test on your PC
 

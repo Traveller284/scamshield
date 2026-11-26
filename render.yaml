@@ -3,6 +3,7 @@ services:
     name: scamshield
     runtime: python
     plan: free
-    buildCommand: python -m compileall -q server.py
+    buildCommand: python -m compileall -q server.py ml_model.py
     startCommand: python server.py
     healthCheckPath: /api/stats
+
