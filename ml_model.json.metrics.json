@@ -1,0 +1,39 @@
+{
+  "ham": {
+    "precision": 0.9721,
+    "recall": 0.9943,
+    "f1": 0.9831,
+    "support": 1051
+  },
+  "spam": {
+    "precision": 0.768,
+    "recall": 0.6713,
+    "f1": 0.7164,
+    "support": 143
+  },
+  "smishing": {
+    "precision": 0.7885,
+    "recall": 0.7455,
+    "f1": 0.7664,
+    "support": 110
+  },
+  "accuracy": 0.9379,
+  "macro_f1": 0.822,
+  "confusion": {
+    "ham": {
+      "ham": 1045,
+      "spam": 4,
+      "smishing": 2
+    },
+    "spam": {
+      "ham": 27,
+      "spam": 96,
+      "smishing": 20
+    },
+    "smishing": {
+      "ham": 3,
+      "spam": 25,
+      "smishing": 82
+    }
+  }
+}

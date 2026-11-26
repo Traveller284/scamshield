@@ -154,7 +154,7 @@ def analyse(text,lang='en',dry=False,private=False,guardian=''):
     if ml_prediction:
         ml_score=ml_prediction['probability']
         score=max(rule_score,round(rule_score*.6+ml_score*.4))
-        ml_info={'probability':ml_score,'evidence':ml_prediction['evidence'],'contribution':score-rule_score}
+        ml_info={'probability':ml_score,'category':ml_prediction.get('category','smishing'),'classProbabilities':ml_prediction.get('classProbabilities',{}),'modelVersion':ml_prediction.get('modelVersion','unknown'),'trainingExamples':ml_prediction.get('trainingExamples',0),'validationF1':ml_prediction.get('validationF1'),'evidence':ml_prediction['evidence'],'contribution':score-rule_score}
     kind=max(weights,key=weights.get) if weights else 'other'; lvl=level_for(score)
     labels={
       'otp':'Requests or mentions an OTP','kyc':'Account or KYC threat','urgency':'Pressure to act quickly','lottery':'Prize or lottery bait','upi':'UPI PIN request','job':'Job offer with a fee','parcel':'Parcel or digital-arrest claim','impersonation':'Bank impersonation','payment':'Suspicious payment demand','malware':'Remote-access app request','utility':'Utility disconnection threat','investment':'Unrealistic investment promise','giftcard':'Gift-card purchase request','advancefee':'Pay first to receive something','link':'Suspicious link','other':'Contains a number or UPI ID that users reported as a scam'}
